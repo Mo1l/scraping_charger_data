@@ -1,5 +1,6 @@
 from encodings import utf_8
 import pickle
+from bitarray import test
 import pandas as pd 
 import numpy as np
 from datetime import datetime
@@ -11,6 +12,7 @@ import threading
 from selenium.common.exceptions import NoSuchElementException
 import os
 import geopandas as gpd
+import time
 
 
 def get_availability(input_to_url:list):
@@ -18,7 +20,7 @@ def get_availability(input_to_url:list):
     options = webdriver.ChromeOptions()
     options.add_argument("--ignore-certificate-errors")
     options.add_argument("--incognito")
-    #options.add_argument("--headless")
+    options.add_argument("--headless")
 
     browser = webdriver.Chrome(executable_path="C:\Program Files\Google\ChromeDriver\chromedriver.exe",options=options)
 
@@ -35,6 +37,8 @@ def get_availability(input_to_url:list):
 
         start_time = datetime.now() 
         break_ = True
+        print(i)
+
         while break_:
             try: 
                 if (datetime.now() - start_time).seconds > 10:
@@ -42,25 +46,34 @@ def get_availability(input_to_url:list):
                     continue
                 # This step ensures that the code fails if there is no location card present
                 _ = browser.find_element_by_class_name("location-card")
+              
 
                 # if location card is found; extract the charger list
                 elements = browser.find_elements_by_class_name("charger-list-item")
                 
                 # If there is no info charger list found - Skip to next - this skips all future charging stations 
-                #if len(elements) == 0:
-                #    break
+                if len(elements) == 0:
+                    print("elements is empty")
 
                 #loop over results: 
                 results_inner = dict()
                 for j,elem in enumerate(elements):
                     
                     charger_usage=elem.find_element_by_class_name("availability").text
-                    
+
+                    # I do this step in the case that there is nothing in the charger_usage element it tries another loop 
+                    if charger_usage is None: 
+                        print("charger_usage is None")
+
                     # Find the availability string i.e. 0/10 
-                    charger_usage= re.search(re_usage, charger_usage).group(0)
-                
+                    charger_usage= re.search(re_usage, charger_usage)
+                    if charger_usage is None: 
+                        print(charger_usage)
+                        print("charger_usage is None")
+                    
+                                    
                     # extracts 0, 1 from "0/1"
-                    charger_usage2 = re.findall(re_at, charger_usage)
+                    charger_usage2 = re.findall(re_at, charger_usage.group(0))
 
                     charger_avail = charger_usage2[0]
                     charger_total = charger_usage2[1]
@@ -86,6 +99,9 @@ def get_availability(input_to_url:list):
             #    if loc_True:
             #        time.sleep(10)
             #        break_ = True
+                #time.sleep(0.5)
+                pass
+            except AttributeError:
                 pass
     browser.close()
     return results
@@ -94,15 +110,19 @@ def get_availability(input_to_url:list):
 def set_up_threads_avail(input_to_url:list, max_workers:int):
 
     input_ids = np.array_split(input_to_url, max_workers)
-    print(input_ids)
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        return executor.map(get_availability,    
+        return list(executor.map(get_availability,    
                             input_ids,
-                            timeout = 60)
+                            timeout = None))
 
 
-def into_DataFrame(charger_ids:list, avail_dict:dict):
+def into_DataFrame(charger_ids:list, avail_list_of_dicts:list):
+
+    avail_dict = {}
+    for i, dict_ in enumerate(avail_list_of_dicts):
+        avail_dict.update(dict_)
+
     ids_  = []
     types_ = []
     avails_ = []
@@ -123,5 +143,5 @@ def into_DataFrame(charger_ids:list, avail_dict:dict):
 
 def save_DataFrame_to_csv(df:pd.DataFrame, charger_type_:str):
     now = datetime.now().strftime('%Y%m%d - %H%M%S')
-    fname = os.path("Datascrapes", charger_type_ + now + '.csv')
+    fname = os.path.join("Datascrapes", charger_type_ + now + '.csv')
     df.to_csv(fname, sep=",", encoding='utf_8', date_format='%Y%m%d - %H%M%S')
