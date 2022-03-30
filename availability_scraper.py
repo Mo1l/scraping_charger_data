@@ -37,7 +37,7 @@ def get_availability(input_to_url:list):
 
         start_time = datetime.now() 
         break_ = True
-        print(i)
+        #print(i)
 
         while break_:
             try: 
@@ -67,9 +67,9 @@ def get_availability(input_to_url:list):
 
                     # Find the availability string i.e. 0/10 
                     charger_usage= re.search(re_usage, charger_usage)
-                    if charger_usage is None: 
-                        print(charger_usage)
-                        print("charger_usage is None")
+                    #if charger_usage is None: 
+                    #    print(charger_usage)
+                    #    print("charger_usage is None")
                     
                                     
                     # extracts 0, 1 from "0/1"
@@ -141,7 +141,7 @@ def into_DataFrame(charger_ids:list, avail_list_of_dicts:list):
     return pd.DataFrame(list(zip(ids_, types_, avails_, totals_, datestamps_)),columns=["Id", "Charger_type", "Available", "Total", "timestamp"])
 
 
-def save_DataFrame_to_csv(df:pd.DataFrame, charger_type_:str):
+def save_DataFrame_to_csv(df:pd.DataFrame, charger_type_:str, some_path):
     now = datetime.now().strftime('%Y%m%d - %H%M%S')
-    fname = os.path.join("Datascrapes", charger_type_ + now + '.csv')
+    fname = os.path.join(some_path,"Datascrapes", charger_type_ + now + '.csv')
     df.to_csv(fname, sep=",", encoding='utf_8', date_format='%Y%m%d - %H%M%S')
