@@ -41,7 +41,7 @@ def get_availability(input_to_url:list):
 
         while break_:
             try: 
-                if (datetime.now() - start_time).seconds > 10:
+                if (datetime.now() - start_time).seconds > 15:
                     break_ = False
                     continue
                 # This step ensures that the code fails if there is no location card present
