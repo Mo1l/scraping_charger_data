@@ -1,4 +1,4 @@
-import availability_scraper as AS
+import scrapertools as AS
 import numpy as np
 import os
 

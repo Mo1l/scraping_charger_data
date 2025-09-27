@@ -1,0 +1,18 @@
+name: scraping_charger_data
+channels:
+  - conda-forge
+  #- defaults
+dependencies:
+  - python
+  - bitarray
+  - numpy
+  - pandas
+  - matplotlib
+  - tqdm
+  - selenium 
+  #- geopandas
+  - pdbpp==0.10.3
+  #- pip
+  #- pip:
+  #  - -e .
+
