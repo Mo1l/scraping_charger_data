@@ -29,6 +29,7 @@ class scraper():
             self, 
             station_ids:list[str],
             out_path,
+            path_for_chromedriver,
             url_re:str='https://ladekort.clever.dk/?lat&lng&zoom=7&location={}&filter=regular,fast,ultra&status=upcoming,available,unavailable,outOfOrder',
         ):
         if not isinstance(url_re, str):
@@ -36,26 +37,28 @@ class scraper():
         self.url_re = url_re
         self.urls = self.construct_urls(station_ids)
         self.out_path = out_path
+        self.path_for_chromedriver = path_for_chromedriver
 
     def construct_urls(self, station_ids):
         self.urls_to_scrape = [self.url_re.format(station_id) for station_id in station_ids] 
         return self.urls_to_scrape 
     
-    def get_availability(self,urls):
+    def get_availability(self,urls, silent=True):
 
         options = webdriver.ChromeOptions()
-        options.add_argument("--ignore-certificate-errors")
-        options.add_argument("--incognito")
-        options.add_argument("--headless")
+        if silent: 
+            options.add_argument("--ignore-certificate-errors")
+            options.add_argument("--incognito")
+            options.add_argument("--headless")
 
-        browser = webdriver.Chrome(executable_path="C:\Program Files\Google\ChromeDriver\chromedriver.exe",options=options)
+        browser = webdriver.Chrome(options=options)
 
         re_loc = re.compile("&location=*[0-9]*&")
         re_usage = re.compile("[0-9]+/[0-9]+")
         re_at    = re.compile("[0-9]+")
 
         results = dict()
-        for url in urls:
+        for i, url in enumerate(urls):
             
             # if I leave lat and lng unknown the page will redirect to the correct coordinates. 
             browser.get(url)
@@ -127,11 +130,12 @@ class scraper():
                     pass
                 except AttributeError:
                     pass
+        
         browser.close()
         return results
 
 
-    def set_up_threads_avail(self, max_workers:int):
+    def get_avail_parallel(self, max_workers:int):
 
         input_ids = np.array_split(self.urls, max_workers)
 
