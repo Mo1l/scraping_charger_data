@@ -30,6 +30,7 @@ class scraper():
             station_ids:list[str],
             out_path,
             path_for_chromedriver,
+            scrape_class, 
             url_re:str='https://ladekort.clever.dk/?lat&lng&zoom=7&location={}&filter=regular,fast,ultra&status=upcoming,available,unavailable,outOfOrder',
         ):
         if not isinstance(url_re, str):
@@ -38,6 +39,7 @@ class scraper():
         self.urls = self.construct_urls(station_ids)
         self.out_path = out_path
         self.path_for_chromedriver = path_for_chromedriver
+        self.scrape_class = scrape_class
 
     def construct_urls(self, station_ids):
         self.urls_to_scrape = [self.url_re.format(station_id) for station_id in station_ids] 
@@ -53,87 +55,14 @@ class scraper():
 
         browser = webdriver.Chrome(options=options)
 
-        re_loc = re.compile("&location=*[0-9]*&")
-        re_usage = re.compile("[0-9]+/[0-9]+")
-        re_at    = re.compile("[0-9]+")
+        # setting up script object
+        scrape_class = self.scrape_class(browser)
 
-        results = dict()
         for i, url in enumerate(urls):
-            
-            # if I leave lat and lng unknown the page will redirect to the correct coordinates. 
-            browser.get(url)
-
-            start_time = datetime.now() 
-            break_ = True
-
-            while break_:
-                try: 
-                    if (datetime.now() - start_time).seconds > 15:
-                        break_ = False
-                        continue
-                    # This step ensures that the code fails if there is no location card present
-                    _ = browser.find_element_by_class_name("location-card")
-                
-
-                    # if location card is found; extract the charger list
-                    elements = browser.find_elements_by_class_name("charger-list-item")
-                    
-                    # If there is no info charger list found - Skip to next - this skips all future charging stations 
-                    if len(elements) == 0:
-                        print("elements is empty")
-
-                    #loop over results: 
-                    results_inner = dict()
-                    for j,elem in enumerate(elements):
-                        
-                        charger_usage=elem.find_element_by_class_name("availability").text
-
-                        # I do this step in the case that there is nothing in the charger_usage element it tries another loop 
-                        if charger_usage is None: 
-                            print("charger_usage is None")
-
-                        # Find the availability string i.e. 0/10 
-                        charger_usage= re.search(re_usage, charger_usage)
-                        #if charger_usage is None: 
-                        #    print(charger_usage)
-                        #    print("charger_usage is None")
-                        
-                                        
-                        # extracts 0, 1 from "0/1"
-                        charger_usage2 = re.findall(re_at, charger_usage.group(0))
-
-                        charger_avail = charger_usage2[0]
-                        charger_total = charger_usage2[1]
-                        
-                        # Extracts charger type
-                        charger_type=elem.find_element_by_class_name("type")
-                        charger_type = charger_type.text
-
-                        # Stores in a dict
-                        results_inner[charger_type] = [charger_avail, charger_total, datetime.now()]
-
-                    # Stores in a dict
-                    results[i] = results_inner
-                    break
-                except NoSuchElementException: 
-                #    if break_:
-                #        break
-                #    new_url=browser.current_url
-                #    #zoom_check=re.search("&zoom=*[0-9]*&", new_url)
-                #    loc_check= re.search(re_loc, new_url).group(0)
-                    
-                #    loc_True = (loc_check == "&location&")
-                #    if loc_True:
-                #        time.sleep(10)
-                #        break_ = True
-                    #time.sleep(0.5)
-                    pass
-                except AttributeError:
-                    pass
+            scrape_class.run_scrape(i, url)
         
-        browser.close()
-        return results
-
+        scrape_class.browser.close()
+        return scrape_class.results
 
     def get_avail_parallel(self, max_workers:int):
 
