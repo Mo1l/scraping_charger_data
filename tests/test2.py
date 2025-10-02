@@ -1,7 +1,7 @@
 
 import numpy as np
-from src.scrapertools import scraper as Scraper
-from src.scrape_scripts.scrape_clever_from_url import clever 
+from scrapertools import selenium_scraper as Scraper
+from scrape_scripts.scrape_clever_with_selenium import clever 
 # load ids to scrape
 station_ids=list(
     map(int, 

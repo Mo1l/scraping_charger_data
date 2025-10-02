@@ -2,7 +2,7 @@
 #breakpoint()
 #import scraper-tool 
 import numpy as np
-from src.scrapertools import scraper as Scraper
+from scrapertools import selenium_scraper as Scraper
 
 # load ids to scrape
 station_ids=list(

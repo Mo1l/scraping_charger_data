@@ -3,9 +3,24 @@ from datetime import datetime
 import re
 import requests
 import numpy as np
+from .base_scraper import base_scraper as Base
 #from selenium.webdriver.common.by import By
-class clever():
-    def __init__(self, silent=True):
+class scraper(Base):
+    def __init__(
+            self, 
+            keyword,
+            station_ids,
+            out_path,
+            url_re:str={},
+            silent=True):
+        # Simply calls the Base init function.
+        super().__init__(
+            keyword=keyword,
+            station_ids=station_ids,
+            out_path=out_path, 
+            url_re=url_re,
+            silent=silent,)
+
         self.results = {}
         self.__setup__(silent)
 
@@ -15,11 +30,11 @@ class clever():
         and should include any preliminaries before querying the first 
         url. 
         If Selenium is used it includes setting up the browser object.
-        If requests is used it can simply return None.
+        If requests is used it can simply be empty.
         """
-        return None
+        pass
 
-    def run_scrape(self, i, url):
+    def run_scrape(self, i, url, scraper_tools):
         response=requests.get(url)
         request_time = datetime.now() 
         
@@ -35,8 +50,7 @@ class clever():
         availability=data['availability']['evses']
         navailable=np.array([availability[cid]['status']=='Available' for cid in chargepointIds.keys()]).sum(dtype=int)
 
-        # data set one:
-        self.results[locationId] = {
+        result ={
             'locationId': locationId,
             'request_time': request_time.isoformat(),
             'navailable': int(navailable), 
@@ -44,3 +58,5 @@ class clever():
             'data': data,
         }
 
+        # return 
+        return locationId, result

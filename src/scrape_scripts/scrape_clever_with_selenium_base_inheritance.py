@@ -1,21 +1,36 @@
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+
+from selenium import webdriver
 from datetime import datetime
 import re
-from selenium.webdriver.common.by import By
-from selenium import webdriver
-class clever():
-    """
-    class that includes everything 
-    necessary to perform a webscrape isolated within a class in the scrape_scripts package.
-    Isolates tools and code related to either selenium or requests within this class.
-    """
-    def __init__(self, silent=True):
-        self.re_tools = {'re_loc': re.compile("&location=*[0-9]*&"),
-                        're_usage': re.compile("[0-9]+/[0-9]+"),
-                        're_at': re.compile("[0-9]+"),
-        }
+import requests
+import numpy as np
+from .base_scraper import base_scraper as Base
+#from selenium.webdriver.common.by import By
+class scraper(Base):
+    def __init__(
+            self, 
+            keyword,
+            station_ids,
+            out_path,
+            url_re:str={},
+            silent=True):
+        # Simply calls the Base init function.
+        super().__init__(
+            keyword=keyword,
+            station_ids=station_ids,
+            out_path=out_path, 
+            url_re=url_re,
+            silent=silent,)
+
         self.results = {}
-        self.__setup__(silent)
+
+        self.re_tools = {'re_loc': re.compile("&location=*[0-9]*&"),
+                're_usage': re.compile("[0-9]+/[0-9]+"),
+                're_at': re.compile("[0-9]+"),
+}
+
 
     def __setup__(self, silent):
         """
@@ -32,25 +47,27 @@ class clever():
             options.add_argument("--headless")
 
         browser = webdriver.Chrome(options=options)
-        self.browser = browser
+        scraper_tools = {'browser': browser}
+        return scraper_tools
 
-    def run_scrape(self, i, url):
-        self.browser.get(url)
+    def run_scrape(self, i, url, scraper_tools):
+        # Unpacks scraper_tools 
+        browser=scraper_tools['browser']
+        browser.get(url)
         start_time = datetime.now() 
         break_ = True
-
         while break_:
             try: 
                 if (datetime.now() - start_time).seconds > 15:
                     break_ = False
                     continue
                 # This step ensures that the code fails if there is no location card present
-                #_ = self.browser.find_element_by_class_name("location-card")
-                _ = self.browser.find_element(By.CLASS_NAME, "location-card")
+                #_ = browser.find_element_by_class_name("location-card")
+                _ = browser.find_element(By.CLASS_NAME, "location-card")
                 
                 # if location card is found; extract the charger list
-                #elements = self.browser.find_elements_by_class_name("charger-list-item")
-                elements = self.browser.find_elements(By.CLASS_NAME, "charger-list-item")
+                #elements = browser.find_elements_by_class_name("charger-list-item")
+                elements = browser.find_elements(By.CLASS_NAME, "charger-list-item")
                 
                 # If there is no info charger list found - Skip to next - this skips all future charging stations 
                 if len(elements) == 0:
@@ -80,11 +97,11 @@ class clever():
                     charger_type = charger_type.text
 
                     # Stores in a dict
-                    results_inner[charger_type] = [charger_avail, charger_total, datetime.now()]
-                
+                    results_inner[charger_type] = [charger_avail, charger_total, datetime.now().isoformat()]
+
                 # Stores in a dict
-                self.results[i] = results_inner
-                break
+                #self.results[i] = results_inner
+                return i, results_inner
             except NoSuchElementException: 
             #    if break_:
             #        break
