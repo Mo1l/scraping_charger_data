@@ -3,4 +3,5 @@ __pycache__/
 data/*
 *.egg-info
 *.cpython-312.pyc
+*.lprof
 

@@ -33,7 +33,8 @@ class scraper(Base):
         If requests is used it can simply be empty.
         """
         pass
-
+    
+    @profile
     def run_scrape(self, i, url, scraper_tools):
         response=requests.get(url)
         request_time = datetime.now() 
