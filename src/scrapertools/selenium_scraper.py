@@ -12,8 +12,6 @@ from concurrent.futures import ThreadPoolExecutor
 import threading
 from selenium.common.exceptions import NoSuchElementException
 import os
-from src.scrape_scripts.scrape_clever_from_api import clever
-import json
 
 class scraper(): 
     """
@@ -30,44 +28,51 @@ class scraper():
     """
     def __init__(
             self, 
-            keyword,
             station_ids:list[str],
             out_path,
-            url_re:str='https://clever.dk/api/chargers/location/{}',
+            path_for_chromedriver,
+            scrape_class, 
+            url_re:str='https://ladekort.clever.dk/?lat&lng&zoom=7&location={}&filter=regular,fast,ultra&status=upcoming,available,unavailable,outOfOrder',
         ):
         if not isinstance(url_re, str):
             raise TypeError("url_re must be a str template consisting of an url with variable input")
-        if not isinstance(keyword, str): 
-            raise TypeError("keyword must be a str. Give it a name that specifies ")
         self.url_re = url_re
         self.urls = self.construct_urls(station_ids)
         self.out_path = out_path
-        self.scrape_script_class = clever
-        self.keyword = keyword
+        self.path_for_chromedriver = path_for_chromedriver
+        self.scrape_class = scrape_class
 
     def construct_urls(self, station_ids):
         self.urls_to_scrape = [self.url_re.format(station_id) for station_id in station_ids] 
         return self.urls_to_scrape 
     
-    def get_availability(self, urls, silent=True):
-        # setting up scrape_script_class
-        scrape_script_class = self.scrape_script_class(silent)
+    def get_availability(self,urls, silent=True):
+
+        options = webdriver.ChromeOptions()
+        if silent: 
+            options.add_argument("--ignore-certificate-errors")
+            options.add_argument("--incognito")
+            options.add_argument("--headless")
+
+        browser = webdriver.Chrome(options=options)
+
+        # setting up script object
+        scrape_class = self.scrape_class(browser)
 
         for i, url in enumerate(urls):
-            scrape_script_class.run_scrape(i=i, url=url)
+            scrape_class.run_scrape(i, url)
         
-        return scrape_script_class.results
+        scrape_class.browser.close()
+        return scrape_class.results
 
     def get_avail_parallel(self, max_workers:int):
 
         input_ids = np.array_split(self.urls, max_workers)
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            results_pooled=list(executor.map(self.get_availability,    
+            return list(executor.map(self.get_availability,    
                                 input_ids,
                                 timeout = None))
-            # flattening results and returning
-            return {k: v for stations in results_pooled for k, v in stations.items()}
 
 
     def into_DataFrame(self, avail_list_of_dicts:list):
@@ -98,18 +103,3 @@ class scraper():
         now = datetime.now().strftime('%Y%m%d - %H%M%S')
         fname = os.path.join(self.out_path, f'Datascrapes{charger_type_}{now}.csv')
         df.to_csv(fname, sep=",", encoding='utf_8', date_format='%Y%m%d - %H%M%S')
-
-    def dump_as_json(self, results):
-        now = datetime.now().strftime('%Y%m%d-%H%M%S')
-        fname = os.path.join(self.out_path, f"scrape_results_{self.keyword}_{now}.json")
-        with open(fname, "w", encoding="utf-8") as f:
-            json.dump(results, f, ensure_ascii=False, indent=4)
-    
-
-    def run(self,max_workers=1):
-        
-        # scrape:
-        results=self.get_avail_parallel(max_workers)
-        
-        # save
-        self.dump_as_json(results)

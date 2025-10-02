@@ -26,7 +26,6 @@ class clever():
                 #_ = self.browser.find_element_by_class_name("location-card")
                 _ = self.browser.find_element(By.CLASS_NAME, "location-card")
                 
-
                 # if location card is found; extract the charger list
                 #elements = self.browser.find_elements_by_class_name("charger-list-item")
                 elements = self.browser.find_elements(By.CLASS_NAME, "charger-list-item")

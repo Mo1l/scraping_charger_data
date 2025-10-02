@@ -6,6 +6,7 @@ import numpy as np
 from datetime import datetime
 from tqdm import tqdm
 from selenium import webdriver
+import requests
 import re
 from concurrent.futures import ThreadPoolExecutor
 import threading
@@ -45,25 +46,6 @@ class scraper():
         self.urls_to_scrape = [self.url_re.format(station_id) for station_id in station_ids] 
         return self.urls_to_scrape 
     
-    def get_availability(self,urls, silent=True):
-
-        options = webdriver.ChromeOptions()
-        if silent: 
-            options.add_argument("--ignore-certificate-errors")
-            options.add_argument("--incognito")
-            options.add_argument("--headless")
-
-        browser = webdriver.Chrome(options=options)
-
-        # setting up script object
-        scrape_class = self.scrape_class(browser)
-
-        for i, url in enumerate(urls):
-            scrape_class.run_scrape(i, url)
-        
-        scrape_class.browser.close()
-        return scrape_class.results
-
     def get_avail_parallel(self, max_workers:int):
 
         input_ids = np.array_split(self.urls, max_workers)

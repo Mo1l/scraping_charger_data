@@ -1,19 +1,17 @@
-
-import numpy as np
 import pandas as pd
-from src.scrapertools import request_scraper as Scraper
-import json
+from scrapertools.request_scraper import scraper as Scraper
 # load ids to scrape
 locations=pd.read_json('./resources/locations_clever.json').T
 station_ids=locations['locationId'].tolist()[0:5]
 
-scraper = Scraper.scraper(
+scraper = Scraper(
     station_ids=station_ids,
-    out_path='.',
+    out_path='./data/',
+    keyword='test',
     url_re='https://clever.dk/api/chargers/location/{}'
 )
 
-breakpoint()
+#breakpoint()
 # if multithreading - use this
 #results_avail=scraper.get_avail_parallel(7)
 
@@ -23,19 +21,9 @@ breakpoint()
 # api_call=scraper.scrape_class()
 # api_call.run_scrape(0, scraper.urls[0])
 
-results=scraper.get_availability(urls=scraper.urls, silent=False)
+par_results=scraper.run(2)
+
+
+
+
 breakpoint()
-
-# api_call.run_scrape(0, scraper.urls[1])
-# api_call.run_scrape(i=0, scraper.urls[1])
-
-import requests
-# response=requests.get(scraper.urls[0:1])
-# data=response.json()
-# scraper.get_availability(scraper.urls[0:2], silent=False)
-
-# occupation status
-# data['availability']['evses']
-
-
-
