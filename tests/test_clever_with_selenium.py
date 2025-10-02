@@ -1,5 +1,5 @@
 import pandas as pd
-from scrapertools.request_scraper import scraper as Scraper
+from scrapers.scrape_clever_selenium import scraper as Scraper
 # load ids to scrape
 locations=pd.read_json('./resources/locations_clever.json').T
 station_ids=locations['locationId'].tolist()[0:5]
@@ -8,7 +8,8 @@ scraper = Scraper(
     station_ids=station_ids,
     out_path='./data/',
     keyword='test',
-    url_re='https://clever.dk/api/chargers/location/{}'
+    url_re='https://clever.dk/ladekort?lat=55.674701&lng=12.506551&zoom=15&location={}&filter=standard,fast,rapid&status=available,planned',
+    silent=False,
 )
 
 #breakpoint()
@@ -21,7 +22,7 @@ scraper = Scraper(
 # api_call=scraper.scrape_class()
 # api_call.run_scrape(0, scraper.urls[0])
 
-par_results=scraper.run(2)
+par_results=scraper.run(1)
 
 
 

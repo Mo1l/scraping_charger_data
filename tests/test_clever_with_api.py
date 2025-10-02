@@ -1,5 +1,5 @@
 import pandas as pd
-from scrape_scripts.scrape_clever_from_api_base_inheritance import scraper as Scraper
+from scrapers.scrape_clever_with_api import scraper as Scraper
 # load ids to scrape
 locations=pd.read_json('./resources/locations_clever.json').T
 station_ids=locations['locationId'].tolist()[0:50]
