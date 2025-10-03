@@ -1,1 +1,3 @@
-Implements a Web scraper that either uses Selenium or requests to scrape a specific webpage.
+A simple wrapper for web scraper projects, designed to query and extract data from specific URLs. Works with Selenium and Requests. 
+
+Example: 
