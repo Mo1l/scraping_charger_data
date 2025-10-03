@@ -3,5 +3,8 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "SCRAPING_CHARGER_DATA"
+name = "scraping_charger_data"
 version = "0.0.1"
+
+[project.urls]
+Homepage = "https://github.com/Mo1l/scraping_charger_data"
