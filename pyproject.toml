@@ -8,3 +8,6 @@ version = "0.0.1"
 
 [project.urls]
 Homepage = "https://github.com/Mo1l/scraping_charger_data"
+
+[tool.setuptools.packages.find]
+where = ["src"]
