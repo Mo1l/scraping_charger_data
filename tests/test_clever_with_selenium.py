@@ -12,19 +12,6 @@ scraper = Scraper(
     silent=False,
 )
 
-#breakpoint()
-# if multithreading - use this
-#results_avail=scraper.get_avail_parallel(7)
-
-# instead try: 
-# est_urls = ['https://clever.dk/ladekort?location=fdc6fdd8-769d-ed11-aad1-0022489ae94c&zoom=15&filter=standard,fast,rapid&status=available,planned']
-
-# api_call=scraper.scrape_class()
-# api_call.run_scrape(0, scraper.urls[0])
-
 par_results=scraper.run(1)
-
-
-
 
 breakpoint()
