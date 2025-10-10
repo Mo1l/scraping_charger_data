@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 from encodings import utf_8
 import pickle
-from bitarray import test
 import pandas as pd 
 import numpy as np
 from datetime import datetime
@@ -12,7 +11,6 @@ import requests
 import re
 from concurrent.futures import ThreadPoolExecutor
 import threading
-from selenium.common.exceptions import NoSuchElementException
 import os
 import json
 

@@ -1,6 +1,4 @@
-from selenium.common.exceptions import NoSuchElementException
 from datetime import datetime
-import re
 import requests
 import numpy as np
 from .base_scraper import base_scraper as Base
