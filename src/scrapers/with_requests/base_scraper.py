@@ -24,7 +24,7 @@ class base_scraper(ABC):
         url_re (function): A callable that generates a URL with variable input.
     Args:
         url_re (function): A function that takes variable input and returns a URL string.
-        station_ids: Station ids that are to be scraped. 
+        identifiers: identifiers that identify object to be scraped 
     Raises:
         TypeError: If url_re is not a callable function.
     Example:
@@ -33,17 +33,20 @@ class base_scraper(ABC):
     def __init__(
             self, 
             keyword,
-            station_ids:list[str],
+            identifiers:list[str],
             out_path,
-            url_re:str,
-            silent:bool,
+            silent:bool=True,
+            url_re:str='{}',
         ):
         if not isinstance(url_re, str):
             raise TypeError("url_re must be a str template consisting of an url with variable input")
         if not isinstance(keyword, str): 
             raise TypeError("keyword must be a str. Give it a name that specifies ")
+        
         self.url_re = url_re
-        self.urls = self.construct_urls(station_ids)
+        self.identifiers = identifiers
+        self.urls = self.construct_urls(identifiers)
+        self.identifiers_urls = dict(zip(identifiers, self.construct_urls(identifiers)))
         self.out_path = out_path
         self.keyword = keyword
         self.silent = silent
@@ -62,23 +65,24 @@ class base_scraper(ABC):
 
     @property
     @abstractmethod
-    def run_scrape(self, i, url, scraper_tools):
+    def query_url(self, url, scraper_tools):
         """
         Should contain the commands to be performed to either manipulate selenium browser object or 
         request calls
         """
         pass  
 
-    def construct_urls(self, station_ids):
-        self.urls_to_scrape = [self.url_re.format(station_id) for station_id in station_ids] 
+    def construct_urls(self, identifiers):
+        self.urls_to_scrape = [self.url_re.format(identifier) for identifier in identifiers] 
         return self.urls_to_scrape 
     
-    def get_availability(self, urls):
+    def query_urls(self, identifiers):
         """
         Fetches requested data from the `.run_scrape()` script for a list of URLs by executing the scraping logic for each URL.
         `.__setup__()`is used here to initialize any needed scrape objects.
         Args:
-            urls (list): A list of URLs to scrape for availability information.
+            identifiers (list): A list of identifiers that can be mapped to an URL through self.identifiers_urls
+             to scrape for information.
         Returns:
             dict: A dictionary mapping each locationId to its corresponding scrape result.
         Notes:
@@ -91,15 +95,15 @@ class base_scraper(ABC):
         scraper_tools=self.__setup__(self.silent)
 
         results = {}
-        for i, url in enumerate(urls):
-            locationId, result=self.run_scrape(i=i, url=url, scraper_tools=scraper_tools)
-            # testing if this can be done when threading
-            results[locationId] = result
+        for identifier in identifiers:
+            url = self.identifiers_urls[identifier]
+            result=self.query_url(url=url, scraper_tools=scraper_tools)
+            results[identifier] = result
         return results
 
-    def get_avail_parallel(self, max_workers:int):
+    def query_urls_parallel(self, max_workers:int):
         """
-        runs `.get_availability()` in parallel.
+        runs `.query_urls()` in parallel.
         Args:
             max_workers (int): The maximum number of worker threads to use for parallel processing.
         Returns:
@@ -109,14 +113,14 @@ class base_scraper(ABC):
             - Results from all threads are flattened into a single dictionary.
         """
 
-        input_ids = np.array_split(self.urls, max_workers)
+        input_ids = np.array_split(self.identifiers, max_workers)
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            results_pooled=list(executor.map(self.get_availability,    
+            results_workers=list(executor.map(self.query_urls,    
                                 input_ids,
                                 timeout = None))
             # flattening results and returning
-            return {k: v for stations in results_pooled for k, v in stations.items()}
+            return {k: v for results_worker in results_workers for k, v in results_worker.items()}
 
 
     def into_DataFrame(self, avail_list_of_dicts:list):
@@ -160,9 +164,9 @@ class base_scraper(ABC):
             raise ValueError(f'max_worker is of type {type(max_workers)}. Should be Int.')
         # scrape:
         if max_workers== 1:
-            results=self.get_availability(self.urls)
+            results=self.query_urls(self.identifiers)
         else: 
-            results=self.get_avail_parallel(max_workers=max_workers)
+            results=self.query_urls_parallel(max_workers=max_workers)
             pass
         
         # stores within results 

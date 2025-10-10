@@ -9,14 +9,14 @@ class scraper(Base):
     def __init__(
             self, 
             keyword,
-            station_ids,
+            identifiers,
             out_path,
             url_re:str={},
             silent=True):
         # Simply calls the Base init function.
         super().__init__(
             keyword=keyword,
-            station_ids=station_ids,
+            identifiers=identifiers,
             out_path=out_path, 
             url_re=url_re,
             silent=silent,)
@@ -35,29 +35,12 @@ class scraper(Base):
         pass
     
     #@profile
-    def run_scrape(self, i, url, scraper_tools):
+    def query_url(self, url, scraper_tools):
         response=requests.get(url)
         request_time = datetime.now() 
         
         # 
-        data=response.json()
+        results=response.json()
+        breakpoint()
 
-        # Get locationId
-        locationId=data['locationId'] 
-        
-        # Create aggreate data
-        chargepointIds=data['evses']
-        nchargepoints = len(chargepointIds.keys())
-        availability=data['availability']['evses']
-        navailable=np.array([availability[cid]['status']=='Available' for cid in chargepointIds.keys()]).sum(dtype=int)
-
-        result ={
-            'locationId': locationId,
-            'request_time': request_time.isoformat(),
-            'navailable': int(navailable), 
-            'ntotal': int(nchargepoints), 
-            'data': data,
-        }
-
-        # return 
-        return locationId, result
+        return results
