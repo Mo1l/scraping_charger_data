@@ -34,7 +34,7 @@ class scraper(Base):
         """
         pass
     
-    @profile
+    #@profile
     def run_scrape(self, i, url, scraper_tools):
         response=requests.get(url)
         request_time = datetime.now() 

@@ -7,12 +7,9 @@ name = "scraping_charger_data"
 version = "0.0.1"
 requires-python = ">=3.8"
 dependencies = [
-    "pandas",
     "requests", 
     "selenium",
     "numpy",
-    "tqdm",
-    "bitarray"
 ]
 
 [project.urls]
