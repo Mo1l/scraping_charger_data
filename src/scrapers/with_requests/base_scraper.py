@@ -1,16 +1,9 @@
 from abc import ABC, abstractmethod
 
-from encodings import utf_8
-import pickle
 import pandas as pd 
 import numpy as np
 from datetime import datetime
-from tqdm import tqdm
-from selenium import webdriver
-import requests
-import re
 from concurrent.futures import ThreadPoolExecutor
-import threading
 import os
 import json
 
