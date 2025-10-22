@@ -7,8 +7,8 @@ class scraper(Base):
     def __init__(
             self, 
             keyword,
-            identifiers,
             out_path,
+            identifiers:list[str],
             url_re:str={},
             silent=True):
         # Simply calls the Base init function.

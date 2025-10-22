@@ -24,10 +24,10 @@ class base_scraper(ABC):
     def __init__(
             self, 
             keyword,
-            identifiers:list[str],
             out_path,
-            silent:bool=True,
+            identifiers:list[str],
             url_re:str='{}',
+            silent:bool=True,
         ):
         if not isinstance(url_re, str):
             raise TypeError("url_re must be a str template consisting of an url with variable input")
