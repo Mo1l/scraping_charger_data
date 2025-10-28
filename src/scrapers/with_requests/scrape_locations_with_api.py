@@ -38,6 +38,5 @@ class scraper(Base):
         
         # 
         results=response.json()
-        breakpoint()
 
         return results

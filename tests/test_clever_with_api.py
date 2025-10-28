@@ -12,7 +12,6 @@ scraper = Scraper(
     url_re='https://clever.dk/api/chargers/location/{}'
 )
 par_results=scraper.run(2)
-breakpoint()
 
 from scrapers.with_requests.scrape_locations_with_api import scraper as Scraper
 scraper = Scraper(
@@ -21,8 +20,6 @@ scraper = Scraper(
     keyword='test',
     url_re='https://clever.dk/api/chargers/locations'
 )
-breakpoint()
 par_results=scraper.run(1)
 par_results
 
-breakpoint()
