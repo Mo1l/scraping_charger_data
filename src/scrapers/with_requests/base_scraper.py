@@ -31,7 +31,7 @@ class base_scraper(ABC):
             identifiers:list[str],
             url_re:str='{}',
             silent:bool=True,
-            save_json=True,
+            save_json:bool=True,
         ):
         if not isinstance(url_re, str):
             raise TypeError("url_re must be a str template consisting of an url with variable input")
