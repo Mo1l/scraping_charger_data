@@ -10,14 +10,16 @@ class scraper(Base):
             out_path,
             identifiers:list[str],
             url_re:str={},
-            silent=True):
+            silent=True,
+            save_json=True,):
         # Simply calls the Base init function.
         super().__init__(
             keyword=keyword,
             identifiers=identifiers,
             out_path=out_path, 
             url_re=url_re,
-            silent=silent,)
+            silent=silent,
+            save_json=save_json,)
 
         self.results = {}
         self.__setup__(silent)
