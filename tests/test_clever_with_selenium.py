@@ -14,4 +14,3 @@ scraper = Scraper(
 
 par_results=scraper.run(1)
 
-breakpoint()
