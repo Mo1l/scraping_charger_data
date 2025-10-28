@@ -46,8 +46,11 @@ class scraper(Base):
         # Create aggreate data
         chargepointIds=data['evses']
         nchargepoints = len(chargepointIds.keys())
-        availability=data['availability']['evses']
-        navailable=np.array([availability[cid]['status']=='Available' for cid in chargepointIds.keys()]).sum(dtype=int)
+        try: # sometimes this information is not available.
+            availability=data['availability']['evses']
+            navailable=np.array([availability[cid]['status']=='Available' for cid in chargepointIds.keys()]).sum(dtype=int)
+        except:
+            navailable = 0
 
         result ={
             'locationId': locationId,
