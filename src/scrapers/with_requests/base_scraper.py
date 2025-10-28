@@ -6,6 +6,9 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 import os
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 class base_scraper(ABC): 
     """
@@ -28,6 +31,7 @@ class base_scraper(ABC):
             identifiers:list[str],
             url_re:str='{}',
             silent:bool=True,
+            save_json=True,
         ):
         if not isinstance(url_re, str):
             raise TypeError("url_re must be a str template consisting of an url with variable input")
@@ -41,6 +45,7 @@ class base_scraper(ABC):
         self.out_path = out_path
         self.keyword = keyword
         self.silent = silent
+        self.save_json= save_json
 
     @property
     @abstractmethod
@@ -144,12 +149,13 @@ class base_scraper(ABC):
         df.to_csv(fname, sep=",", encoding='utf_8', date_format='%Y%m%d - %H%M%S')
 
     def dump_as_json(self, results):
-        now = datetime.now().strftime('%Y%m%d-%H%M%S')
-        fname = os.path.join(self.out_path, f"scrape_results_{self.keyword}_{now}.json")
-        with open(fname, "w", encoding="utf-8") as f:
-            json.dump(results, f, ensure_ascii=False, indent=4)
+        if self.save_json: 
+            now = datetime.now().strftime('%Y%m%d-%H%M%S')
+            fname = os.path.join(self.out_path, f"scrape_results_{self.keyword}_{now}.json")
+            with open(fname, "w", encoding="utf-8") as f:
+                json.dump(results, f, ensure_ascii=False, indent=4)
+            logging.info(f'Dumping {self.keyword}-data as json file at {self.out_path}.')
     
-
     def run(self,max_workers:int=1):
         if not isinstance(max_workers, int):
             raise ValueError(f'max_worker is of type {type(max_workers)}. Should be Int.')
