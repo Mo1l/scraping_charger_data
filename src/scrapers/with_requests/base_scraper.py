@@ -7,6 +7,8 @@ from concurrent.futures import ThreadPoolExecutor
 import os
 import json
 import logging
+from requests.exceptions import Timeout, RequestException
+
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,7 @@ class base_scraper(ABC):
     Args:
         url_re (function): A function that takes variable input and returns a URL string.
         identifiers: identifiers that identify object to be scraped 
+        options: kwargs to be sent to the requests.get()
     Raises:
         TypeError: If url_re is not a callable function.
     Example:
@@ -32,6 +35,7 @@ class base_scraper(ABC):
             url_re:str='{}',
             silent:bool=True,
             save_json:bool=True,
+            options=None,
         ):
         if not isinstance(url_re, str):
             raise TypeError("url_re must be a str template consisting of an url with variable input")
@@ -46,6 +50,7 @@ class base_scraper(ABC):
         self.keyword = keyword
         self.silent = silent
         self.save_json= save_json
+        self.options = options if options is not None else {}
 
     @property
     @abstractmethod
@@ -61,10 +66,11 @@ class base_scraper(ABC):
 
     @property
     @abstractmethod
-    def query_url(self, url, scraper_tools):
+    def query_url(self, url, scraper_tools, options):
         """
         Should contain the commands to be performed to either manipulate selenium browser object or 
         request calls
+        options are kwargs for selenium or requests. should be a dict. 
         """
         pass  
 
@@ -89,12 +95,24 @@ class base_scraper(ABC):
         """
         # performing preliminaries for scraping: 
         scraper_tools=self.__setup__(self.silent)
+        options = self.options.copy()
 
         results = {}
         for identifier in identifiers:
             url = self.identifiers_urls[identifier]
-            result=self.query_url(url=url, scraper_tools=scraper_tools)
-            results[identifier] = result
+            try:
+                result=self.query_url(url=url, scraper_tools=scraper_tools, options=options)
+                results[identifier] = result
+            
+            except Timeout:
+                logging.error(f"Connection timeout - server took too long to respond for {identifier}")
+                logging.error('===== Scraper STOPPED =====')
+                break
+            except RequestException as e:
+                # Catch all other requests-related errors
+                logging.error(f"Request failed: {e} for {identifier}")
+                logging.error('===== Scraper STOPPED =====')
+                break
         return results
 
     def query_urls_parallel(self, max_workers:int):

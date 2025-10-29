@@ -9,7 +9,8 @@ scraper = Scraper(
     identifiers=station_ids,
     out_path='./data/',
     keyword='test',
-    url_re='https://clever.dk/api/chargers/location/{}'
+    url_re='https://clever.dk/api/chargers/location/{}',
+    options = {'timeout': (60)},
 )
 par_results=scraper.run(2)
 
@@ -18,7 +19,8 @@ scraper = Scraper(
     identifiers=['locations'],
     out_path='./data/',
     keyword='test',
-    url_re='https://clever.dk/api/chargers/locations'
+    url_re='https://clever.dk/api/chargers/locations',
+    options = {'timeout': 60}
 )
 par_results=scraper.run(1)
 par_results

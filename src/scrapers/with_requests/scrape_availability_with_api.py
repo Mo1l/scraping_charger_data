@@ -11,7 +11,8 @@ class scraper(Base):
             identifiers:list[str],
             url_re:str={},
             silent=True,
-            save_json=True,):
+            save_json=True,
+            options=None):
         # Simply calls the Base init function.
         super().__init__(
             keyword=keyword,
@@ -19,7 +20,8 @@ class scraper(Base):
             out_path=out_path, 
             url_re=url_re,
             silent=silent,
-            save_json=save_json,)
+            save_json=save_json,
+            options=options)
 
         self.results = {}
         self.__setup__(silent)
@@ -35,8 +37,8 @@ class scraper(Base):
         pass
     
     #@profile
-    def query_url(self, url, scraper_tools):
-        response=requests.get(url)
+    def query_url(self, url, scraper_tools, options):
+        response=requests.get(url, **options)
         request_time = datetime.now() 
         
         # 
