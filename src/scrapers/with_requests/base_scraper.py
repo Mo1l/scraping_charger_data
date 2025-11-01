@@ -50,9 +50,13 @@ class base_scraper(ABC):
         self.keyword = keyword
         self.silent = silent
         self.save_json= save_json
+        
+        ## TODO: This is not robust to other arguments not accepted by request.get() 
+        options = options if options is not None else {}
         sleep_seconds = options.pop('sleep_seconds', 0.0)
         self._sleep = self.__sleep_func(sleep_seconds)
-        self.options = options if options is not None else {}
+        self.options = options 
+
     @property
     @abstractmethod
     def __setup__(self, silent):
