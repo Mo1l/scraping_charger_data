@@ -50,8 +50,9 @@ class base_scraper(ABC):
         self.keyword = keyword
         self.silent = silent
         self.save_json= save_json
+        sleep_seconds = options.pop('sleep_seconds', 0.0)
+        self._sleep = self.__sleep_func(sleep_seconds)
         self.options = options if options is not None else {}
-
     @property
     @abstractmethod
     def __setup__(self, silent):
@@ -64,6 +65,13 @@ class base_scraper(ABC):
         scraper_tools = {}
         return scraper_tools
 
+    def __sleep_func(self, sleep_seconds):
+        if sleep_seconds > 0.0: 
+            return lambda: sleep(sleep_seconds)
+        else: 
+            return lambda: None
+
+        
     @property
     @abstractmethod
     def query_url(self, url, scraper_tools, options):
@@ -96,10 +104,9 @@ class base_scraper(ABC):
         # performing preliminaries for scraping: 
         scraper_tools=self.__setup__(self.silent)
         options = self.options.copy()
-        sleep_time = float(options.get('sleep_seconds', 0.0))
         results = {}
         for identifier in identifiers:
-            sleep(sleep_time)
+            self._sleep()
             url = self.identifiers_urls[identifier]
             try:
                 result=self.query_url(url=url, scraper_tools=scraper_tools, options=options)
