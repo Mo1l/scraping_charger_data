@@ -109,6 +109,7 @@ class base_scraper(ABC):
         scraper_tools=self.__setup__(self.silent)
         options = self.options.copy()
         results = {}
+        ntimeouts = 0
         for identifier in identifiers:
             self._sleep()
             url = self.identifiers_urls[identifier]
@@ -116,14 +117,22 @@ class base_scraper(ABC):
                 result=self.query_url(url=url, scraper_tools=scraper_tools, options=options)
                 results[identifier] = result
             except Timeout:
-                logging.error(f"Connection timeout - server took too long to respond for {identifier}")
-                logging.error('===== Scraper STOPPED =====')
-                break
+                logging.warning(f"Connection timeout - server took too long to respond for {identifier}")
+                ntimeouts += 1
+                if ntimeouts > 10: 
+                    logging.error(f"reached maximum timeouts")
+                    logging.error('===== Full Stop  =====')
+                    break
+                continue
             except RequestException as e:
                 # Catch all other requests-related errors
-                logging.error(f"Request failed: {e} for {identifier}")
-                logging.error('===== Scraper STOPPED =====')
-                break
+                logging.warning(f"Request failed: {e} for {identifier}")
+                ntimeouts += 1
+                if ntimeouts > 10: 
+                    logging.error(f"reached maximum timeouts")
+                    logging.error('===== Full Stop  =====')
+                    break
+                continue
         return results
 
     def query_urls_parallel(self, max_workers:int):
