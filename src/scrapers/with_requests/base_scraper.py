@@ -53,8 +53,8 @@ class base_scraper(ABC):
         
         ## TODO: This is not robust to other arguments not accepted by request.get() 
         options = options if options is not None else {}
-        sleep_seconds = options.pop('sleep_seconds', 0.0)
-        self._sleep = self.__sleep_func(sleep_seconds)
+        sleep_in_seconds = options.pop('sleep_in_seconds', 0.0)
+        self._sleep = self.__sleep_func(sleep_in_seconds)
         self.options = options 
 
     @property
@@ -69,9 +69,9 @@ class base_scraper(ABC):
         scraper_tools = {}
         return scraper_tools
 
-    def __sleep_func(self, sleep_seconds):
-        if sleep_seconds > 0.0: 
-            return lambda: sleep(sleep_seconds)
+    def __sleep_func(self, sleep_in_seconds):
+        if sleep_in_seconds > 0.0: 
+            return lambda: sleep(sleep_in_seconds)
         else: 
             return lambda: None
 

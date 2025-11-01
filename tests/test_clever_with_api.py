@@ -10,7 +10,7 @@ scraper = Scraper(
     out_path='./data/',
     keyword='test',
     url_re='https://clever.dk/api/chargers/location/{}',
-    options = {'timeout': (60), 'sleep_seconds': 1},
+    options = {'timeout': (60), 'sleep_in_seconds': 1},
 )
 par_results=scraper.run(2)
 
