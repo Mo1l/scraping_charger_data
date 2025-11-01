@@ -8,7 +8,7 @@ import os
 import json
 import logging
 from requests.exceptions import Timeout, RequestException
-
+from time import sleep
 
 logger = logging.getLogger(__name__)
 
@@ -96,14 +96,14 @@ class base_scraper(ABC):
         # performing preliminaries for scraping: 
         scraper_tools=self.__setup__(self.silent)
         options = self.options.copy()
-
+        sleep_time = float(options.get('sleep_seconds', 0.0))
         results = {}
         for identifier in identifiers:
+            sleep(sleep_time)
             url = self.identifiers_urls[identifier]
             try:
                 result=self.query_url(url=url, scraper_tools=scraper_tools, options=options)
                 results[identifier] = result
-            
             except Timeout:
                 logging.error(f"Connection timeout - server took too long to respond for {identifier}")
                 logging.error('===== Scraper STOPPED =====')
